@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin Bank App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/index.css" rel="stylesheet">
+    <script src="js/libs/jquery.min.js" type="text/javascript"></script>
+    <script src="js/libs/bootstrap.min.js" type="text/javascript"></script>
+    <script src="js/settings.js" type="text/javascript"></script>
+    <script src="js/index.js" type="text/javascript"></script>
+</head>
+<body>
+
+<div id="main" class="container">
+    <div id="bankSearch" class="row panel panel-primary">
+        <div class="panel-heading">
+            <h3>Bitcoin Banking App</h3>
+        </div>
+
+        <div class="panel-body">
+            <div class="form-group">
+                <label for="bankSearchAddr">Enter bank web address:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="bankSearchAddr" placeholder="?">
+                    <div class="input-group-btn">
+                        <button id="lookUp" type="submit" class="btn btn-primary">Lookup</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="bankSearchAddr">Or select one from the list:</label>
+                <select id="selectBank" class="form-control" size="4" multiple >
+                    <option>https://www.bitcoindemobank.com</option>
+                    <option>http://localhost/wordpress</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="button" id="bankSearchOk" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">OK</button>
+                <button type="button" id="bankSearchCancel" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">Cancel</button>
+            </div>
+
+        </div>
+
+        <div class="panel-footer">
+            <div class="form-group">
+                <p>Name: <span>Bitcoin Demo Bank</span></p>
+                <p>Link: <span><a href="http://bitcoindemobank.com" target="=_blank">bitcoindemobank.com</a></span></p>
+                <p>Status: <span class="alert-success">Online</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="disconnected" class="row panel panel-primary">
+        <div class="panel-heading">
+            <h3>Bitcoin Banking App</h3>
+        </div>
+
+        <div class="panel-body">
+            <div class="form-group">
+                <label for="BankAddress">Select Bitcoin bank:</label>
+                <div class="input-group">
+                    <select class="form-control" id="bankAddress" placeholder="Select a bank from search">
+                    </select>
+
+                    <div class="input-group-btn">
+                        <button id="searchBankPanel" type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Login username:</label>
+                <div class="input-group">
+                    <div id="usernameAlert" class="alert alert-danger" style="display: none;">
+                        Not set.
+                    </div>
+                    <input type="text" class="form-control" id="username" placeholder="Username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Login password:</label>
+                <div class="input-group">
+                    <div id="passwordAlert" class="alert alert-danger" style="display: none;">
+                        Not set.
+                    </div>
+                    <input type="password" class="form-control" id="password" placeholder="Password">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <label><input id="rememberPassword" type="checkbox">Remember password</label>
+                </div>
+                <div class="input-group">
+                    <label><input id="stayConnected" type="checkbox">Stay connected</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-xs-6">
+                    <p><span id="selectedBankLink"></span></p>
+                    <p>Status: <span id="status_link" class="alert-success">Online</span></p>
+                </div>
+                <div class="col-xs-6">
+                    <button type="button" id="connectBank" class="btn btn-primary pull-right">Connect</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="connected" class="row panel panel-primary">
+        <div class="panel-heading">
+            <h3>Bitcoin Banking App</h3>
+        </div>
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#tabAccount" aria-controls="tabAccount" role="tab" data-toggle="tab">Account</a></li>
+            <li role="presentation"><a href="#tabSend" aria-controls="tabSend" role="tab" data-toggle="tab">Send</a></li>
+            <li role="presentation"><a href="#tabRequest" aria-controls="tabRequest" role="tab" data-toggle="tab">Request</a></li>
+            <li role="presentation"><a href="#tabOptions" aria-controls="tabOptions" role="tab" data-toggle="tab">Options</a></li>
+        </ul>
+
+        <div class="panel-body">
+            <div class="form-group">
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+
+                    <div role="tabpanel" class="tab-pane active" id="tabAccount">
+                        <div class="form-group">
+                            <label for="defaultAccount">Select account for one-click payment:</label>
+                            <select class="form-control" id="defaultAccount">
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankSearchAddr">Latest transactions:</label>
+                            <select id="latestTransaction" class="form-control" size="10" multiple >
+                            </select>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane" id="tabSend">
+                        <div class="form-group">
+                            <label>Send a Bitcoin Cheque:</label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="x1" placeholder="Receiver's name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="x2" placeholder="Receiver's e-mail">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="x3" placeholder="Bitcoins">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="x4" placeholder="Short memo">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <label><input id="x6" type="checkbox">Send copy of e-mail to myself</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" id="sendCheque" class="btn btn-primary">Send Bitcoin Cheque</button>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane" id="tabRequest">
+                        <div class="form-group">
+                            <label>Request Bitcoins from others:</label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="y1" placeholder="Payers's name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="y2" placeholder="Payer's e-mail">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="y3" placeholder="Bitcoins">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="y4" placeholder="Short memo">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <label><input id="x5" type="checkbox">Send copy of e-mail to myself</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" id="sendRequest" class="btn btn-primary">Request Bitcoin</button>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane" id="tabOptions">
+                        <div class="form-group">
+                            <label for="paymentBroswerHeader">Payment browser HTTP header:</label>
+                            <div class="input-group">
+                                <div id="paymentBroswerHeaderAlert" class="alert alert-danger" style="display: none;">
+                                    Not set.
+                                </div>
+                                <input type="text" class="form-control" id="paymentBroswerHeader" placeholder="v:1,pp:1-4,pq:1;2,pc:BTC;LTC">
+                                <div class="input-group-btn">
+                                    <button id="savePaymentBroswerHeader" type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-xs-6">
+                    <p><span id="bankWebAddr"></span></p>
+                    <p>Link: <span id="status_connection" class="alert-warning">Connecting...</span></p>
+                </div>
+                <div class="col-xs-6">
+                    <button type="button" id="disconnectBank" class="btn btn-primary pull-right">Disconnect</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
+

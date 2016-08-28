@@ -1,0 +1,31 @@
+{
+   "author": "Bitcoin Cheque Foundation",
+   "background": {
+      "scripts": [ "data/js/background.js" ]
+   },
+   "browser_action": {
+      "default_icon": {
+         "19": "data/bitcoin19.png",
+         "38": "data/bitcoin38.png"
+      },
+      "default_popup": "data/index.html",
+      "default_title": "Bitcoin Banking App"
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "data/js/libs/jquery.min.js", "data/js/libs/md5.js", "data/js/settings.js", "data/js/payment.js", "data/js/loadpopup.js", "data/js/index.js" ],
+      "matches": [ "<all_urls>" ]
+   } ],
+   "description": "Bitoin Banking App. Connects to your Bitcoin Bank and pay pages by one-click.",
+   "icons": {
+      "128": "data/bitcoin128.png",
+      "16": "data/bitcoin16.png",
+      "48": "data/bitcoin48.png"
+   },
+   "manifest_version": 2,
+   "name": "Bitcoin Banking App",
+   "permissions": [ "<all_urls>", "storage", "contextMenus", "activeTab", "webRequest", "webRequestBlocking" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.0.2",
+   "web_accessible_resources": [ "/data/*", "/data/css/*" ]
+}
