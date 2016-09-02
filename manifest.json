@@ -26,6 +26,6 @@
    "name": "Bitcoin Banking App",
    "permissions": [ "<all_urls>", "storage", "contextMenus", "activeTab", "webRequest", "webRequestBlocking" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "0.0.2",
+   "version": "0.0.3",
    "web_accessible_resources": [ "/data/*", "/data/css/*" ]
 }
