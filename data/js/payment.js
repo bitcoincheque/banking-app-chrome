@@ -30,7 +30,7 @@ $(document).ready(function () {
         // Read payment information from visiting site
         $.getJSON(payment_link, function(json_payment_info) {
             // Decode it
-            payment_request_file = json_payment_info.payment_request;
+            var payment_request_file = json_payment_info.payment_request;
             i = payment_request_file.lastIndexOf('_');
             json_padded_base64 = payment_request_file.substring(i+1);
             json_padded = window.atob(json_padded_base64);
@@ -41,7 +41,7 @@ $(document).ready(function () {
             md5sum_str = md5sum.toString();
 
             if(md5sum_str == cheque_request.md5) {
-                data = JSON.parse(data_json);
+                var payment_request = JSON.parse(data_json);
 
                 // Read bank login and default account from settings
                 settings.getLoginDetails().then(function(login_details) {
@@ -51,22 +51,37 @@ $(document).ready(function () {
                     var account = login_details['Account'];
 
                     // Request a cheque from the bank
-                    json_url = bank_url;
-                    json_url += '/wp-admin/admin-ajax.php?action=bcf_bitcoinbank_process_ajax_request_cheque';
-                    json_url += '&username=' + username;
-                    json_url += '&password=' + password;
-                    json_url += '&account=' + account;
-                    json_url += '&payment_request=' + json_payment_info.payment_request;
+                    url = bank_url + '/wp-admin/admin-ajax.php/';
 
-                    $.getJSON(json_url, function(json_bitcoin_cheque){
-                        json_url = data.paylink;
-                        json_url = json_url.concat('&cheque=');
-                        json_url = json_url.concat(json_bitcoin_cheque.cheque);
+                    data = {};
+                    data['action'] = 'request_cheque';
+                    data['username'] = username;
+                    data['password'] = password;
+                    data['account'] = account;
+                    data['payment_request'] = payment_request_file;
 
-                        // Send the cheque to the receiver
-                        $.getJSON(json_url, function(response){
-                        });
-                    })
+                    $.post(url, data, function(response){
+                        if(response.result == 'OK')
+                        {
+                            url = payment_request.paylink;
+
+                            data = {};
+                            data['action'] = 'send_payment_cheque';
+                            data['cheque'] = response.cheque;
+
+                            // Send the cheque to the receiver
+                            $.post(url, data, function(response){
+                                if(response.result != 'OK')
+                                {
+                                    alert('Payment error. Error message: ' + response.message);
+                                }
+                            }, 'json');
+                        }
+                        else
+                        {
+                            alert('Error requesting cheque from bank. Error message: ' + response.message);                            
+                        }
+                    },'json')
                 });
             };
         });

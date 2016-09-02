@@ -55,30 +55,39 @@ $(document).ready(function () {
 
         });
     }
-    loadData();
+
+    $('#mainbody').ready( function(){
+        loadData();    
+    });
 
     function updateTransactionList(bank_url, username, password, account){
         console.log('Load transaction data from bank.');
 
         $('#latestTransaction').append("<option value='status'>Loading...</option>");
 
-        api_url = bank_url + '/wp-admin/admin-ajax.php?action=get_transactions&username=' + username + '&password=' + password + '&account=' + account;
+        url = bank_url + '/wp-admin/admin-ajax.php/';
 
-        $.getJSON(api_url, function(json) {
-            if (json.result == "OK") {
+        var data = {};
+        data['action'] = 'get_transactions';
+        data['username'] = username;
+        data['password'] = password;
+        data['account'] = account;
+
+        $.post(url, data, function(response) {
+            if (response.result == "OK") {
                 $('#latestTransaction option[value="status"]').remove();
 
-                for (index = 0, len = json.transactions.length; index < len; ++index) {
+                for (index = 0, len = response.transactions.length; index < len; ++index) {
 
-                    datetime = json.transactions[index].datetime.substring(5);
-                    trans_type = json.transactions[index].type.toLowerCase();
+                    datetime = response.transactions[index].datetime.substring(5);
+                    trans_type = response.transactions[index].type.toLowerCase();
                     trans_type = trans_type.charAt(0).toUpperCase() + trans_type.slice(1);
-                    amount = json.transactions[index].amount;
+                    amount = response.transactions[index].amount;
                     amount_int = Number(amount);
                     amount_float = amount_int / 10000000;
                     amount_str = String(amount_float);
 
-                    option_text = '<option value="'+ String(json.transactions[index].id) +'">' + datetime + ' ' + trans_type + ' ' + amount_str + '</option>';
+                    option_text = '<option value="'+ String(response.transactions[index].id) +'">' + datetime + ' ' + trans_type + ' ' + amount_str + '</option>';
                     $('#latestTransaction').append(option_text);
                 }
             }
@@ -86,7 +95,7 @@ $(document).ready(function () {
             {
                 $('#latestTransaction option[value="status"]').text('Error loading transaction');
             }
-        });
+        }, 'json');
     }
 
     function loadDataFromBank() {
@@ -108,22 +117,28 @@ $(document).ready(function () {
             $('#selectedBankLink').html('<a href="'+bank_url+'" target="_blank"><u>'+bank_url+'</u></a>');
             $('#bankWebAddr').html('<a href="'+bank_url+'" target="_blank"><u>'+bank_url+'</u></a>');
 
-            api_url = bank_url + '/wp-admin/admin-ajax.php?action=get_account_list&username=' + username + '&password=' + password;
-            $.getJSON(api_url, function(json) {
-                if(json.result == "OK")
+            url = bank_url + '/wp-admin/admin-ajax.php/';
+
+            var data = {};
+            data['action'] = 'get_account_list';
+            data['username'] = username;
+            data['password'] = password;
+
+            $.post(url, data, function(response) {
+                if(response.result == "OK")
                 {
-                    for (index = 0, len = json.list.length; index < len; ++index) {
-                        balance_int = Number(json.list[index].balance);
+                    for (index = 0, len = response.list.length; index < len; ++index) {
+                        balance_int = Number(response.list[index].balance);
                         balance_float = balance_int / 100000000;
                         balance_str = String(balance_float);
 
-                        option_text = '<option value="'+ String(json.list[index].account_id) +'">' + json.list[index].name + ' / ' + balance_str +' ' + json.list[index].currency + '</option>';
+                        option_text = '<option value="'+ String(response.list[index].account_id) +'">' + response.list[index].name + ' / ' + balance_str +' ' + response.list[index].currency + '</option>';
                         $('#defaultAccount').append(option_text);
                     }
 
                     // If only one account, set is as the default
-                    if(json.list.length == 1){
-                        account = json.list[0].account_id;
+                    if(response.list.length == 1){
+                        account = response.list[0].account_id;
 
                         settings.getLoginDetails().then(function(login_details) {
                             login_details['Account'] = account;
@@ -140,7 +155,7 @@ $(document).ready(function () {
 
                     $('#status_connection').text = "Connected";
                 }
-            });
+            }, 'json');
 
         });
     }
