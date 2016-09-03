@@ -9,6 +9,7 @@
  */
 
 $(document).ready(function () {
+    var SATHOSI = 100000000;
 
     function loadData() {
         console.log('Load data from settings.');
@@ -84,7 +85,7 @@ $(document).ready(function () {
                     trans_type = trans_type.charAt(0).toUpperCase() + trans_type.slice(1);
                     amount = response.transactions[index].amount;
                     amount_int = Number(amount);
-                    amount_float = amount_int / 10000000;
+                    amount_float = (1.0 * amount_int) / SATHOSI;
                     amount_str = String(amount_float);
 
                     option_text = '<option value="'+ String(response.transactions[index].id) +'">' + datetime + ' ' + trans_type + ' ' + amount_str + '</option>';
@@ -101,7 +102,8 @@ $(document).ready(function () {
     function loadDataFromBank() {
         console.log('Load data from bank.');
 
-        $('#status_connection').text = "Loading...";
+        $('#status_connection').text("Loading...");
+        $('#status_connection').attr("class", "alert-warning");
 
         $('#selectedBankLink').html('');
         $('#bankWebAddr').html('');
@@ -109,7 +111,7 @@ $(document).ready(function () {
         $('#defaultAccount').val(0);
         $('#latestTransaction').html('');
 
-        settings.getLoginDetails().then(function(result){
+        settings.getLoginDetails().then(function(result) {
             var bank_url = result['BankUrl'];
             var username = result['Username'];
             var password = result['Password'];
@@ -129,7 +131,7 @@ $(document).ready(function () {
                 {
                     for (index = 0, len = response.list.length; index < len; ++index) {
                         balance_int = Number(response.list[index].balance);
-                        balance_float = balance_int / 100000000;
+                        balance_float = balance_int / SATHOSI;
                         balance_str = String(balance_float);
 
                         option_text = '<option value="'+ String(response.list[index].account_id) +'">' + response.list[index].name + ' / ' + balance_str +' ' + response.list[index].currency + '</option>';
@@ -152,8 +154,8 @@ $(document).ready(function () {
 
                     $('#status_connection').text("Connected");
                     $('#status_connection').attr("class", "alert-success");
-
-                    $('#status_connection').text = "Connected";
+                }else{
+                    $('#latestTransaction option[value="status"]').text('Error loading transaction');
                 }
             }, 'json');
 
@@ -240,6 +242,63 @@ $(document).ready(function () {
         $('#bankSearch').hide();
         $('#connected').hide();
         $('#disconnected').show();
+    });
+
+    $('#sendCheque').click(function() {
+        var receivers_name = $('#send_cheque_receivers_name').val();
+        var receivers_email = $('#send_cheque_receivers_email').val();
+        amount_str = $('#send_cheque_amount').val();
+        var memo = $('#send_cheque_memo').val();
+
+        var amount = 0;
+        amount_float = parseFloat(amount_str);
+        if(amount_float > 0.0)
+        {
+            amount = Math.floor(amount_float * SATHOSI);
+        }
+
+        var cc_me = 0;
+        if($('#rememberPassword').is(':checked')){
+            var cc_me = 1;
+        }
+
+        $('#status_connection').text("Sending cheque...");
+        $('#status_connection').attr("class", "alert-warning");
+
+        settings.getLoginDetails().then(function(login_details) {
+            var bank_url = login_details['BankUrl'];
+            var username = login_details['Username'];
+            var password = login_details['Password'];
+            var account = login_details['Account'];
+
+            data = {};
+            data['action'] = 'draw_cheque';
+            data['username'] = username;
+            data['password'] = password;
+            data['account'] = account;
+            data['receivers_name'] = receivers_name;
+            data['bank_send_to'] = receivers_email;
+            data['lock'] = receivers_email;
+            data['amount'] = amount;
+            data['memo'] = memo;
+            data['cc_me'] = cc_me;
+
+            url = bank_url + '/wp-admin/admin-ajax.php/';
+
+            $.post(url, data, function(response) {
+                if (response.result == 'OK') {
+                    $('#status_connection').text("Cheque sent OK");
+                    $('#status_connection').attr("class", "alert-success");
+                }
+                else
+                {
+                    $('#status_connection').text(response.message);
+                    $('#status_connection').attr("class", "alert-danger");
+                }
+            }, 'json');
+
+        })
+
     });
 
 });
