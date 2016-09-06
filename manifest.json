@@ -13,7 +13,7 @@
    },
    "content_scripts": [ {
       "all_frames": true,
-      "js": [ "data/js/libs/jquery.min.js", "data/js/libs/md5.js", "data/js/settings.js", "data/js/payment.js", "data/js/loadpopup.js", "data/js/index.js" ],
+      "js": [ "data/js/libs/jquery.min.js", "data/js/libs/md5.js", "data/js/settings.js", "data/js/payment.js", "data/js/loadpopup.js"],
       "matches": [ "<all_urls>" ]
    } ],
    "description": "Bitoin Banking App. Connects to your Bitcoin Bank and pay pages by one-click.",
