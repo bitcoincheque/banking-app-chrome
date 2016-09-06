@@ -113,20 +113,19 @@ $(document).ready(function () {
 
         settings.getLoginDetails().then(function(result) {
             var bank_url = result['BankUrl'];
+            var bankingapp_url = result['BankingAppUrl'];
             var username = result['Username'];
             var password = result['Password'];
 
             $('#selectedBankLink').html('<a href="'+bank_url+'" target="_blank"><u>'+bank_url+'</u></a>');
             $('#bankWebAddr').html('<a href="'+bank_url+'" target="_blank"><u>'+bank_url+'</u></a>');
 
-            url = bank_url + '/wp-admin/admin-ajax.php/';
-
             var data = {};
             data['action'] = 'get_account_list';
             data['username'] = username;
             data['password'] = password;
 
-            $.post(url, data, function(response) {
+            $.post(bankingapp_url, data, function(response) {
                 if(response.result == "OK")
                 {
                     for (index = 0, len = response.list.length; index < len; ++index) {
@@ -150,7 +149,7 @@ $(document).ready(function () {
                         })
                     }
 
-                    updateTransactionList(bank_url, username, password, account);
+                    updateTransactionList(bankingapp_url, username, password, account);
 
                     $('#status_connection').text("Connected");
                     $('#status_connection').attr("class", "alert-success");
@@ -185,6 +184,7 @@ $(document).ready(function () {
     });
 
     $('#connectBank').click(function () {
+        $('#status_link').text("Connecting...");
         var login_details = {};
         login_details['BankUrl'] = $('#bankAddress').val();
         login_details['Username'] = $('#username').val();
@@ -192,19 +192,35 @@ $(document).ready(function () {
         login_details['RememberPasswd'] = 0;
         login_details['StayConnected'] = 0;
 
-        if($('#rememberPassword').is(':checked')){
-            login_details['RememberPasswd'] = 1;
-        }
-        if($('#stayConnected').is(':checked')){
-            login_details['StayConnected'] = 1;
-        }
+        $.get(login_details['BankUrl'], function(response, status) {
 
-        settings.setLoginDetails(login_details).then(function(){
-            $('#bankSearch').hide();
-            $('#connected').show();
-            $('#disconnected').hide();
+            $('#status_link').text("Connected");
 
-            loadDataFromBank();
+            if (status == 'success') {
+
+                $('#status_link').text("Connected!");
+
+                bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
+                $('#status_link').text("Link:" + bankingapp_url);
+                $('#status_link').attr("class", "alert-success");
+
+                login_details['BankingAppUrl'] = bankingapp_url;
+
+                if ($('#rememberPassword').is(':checked')) {
+                    login_details['RememberPasswd'] = 1;
+                }
+                if ($('#stayConnected').is(':checked')) {
+                    login_details['StayConnected'] = 1;
+                }
+
+                settings.setLoginDetails(login_details).then(function () {
+                    $('#bankSearch').hide();
+                    $('#connected').show();
+                    $('#disconnected').hide();
+
+                    loadDataFromBank();
+                });
+            }
         });
     });
 
@@ -266,7 +282,9 @@ $(document).ready(function () {
         $('#status_connection').attr("class", "alert-warning");
 
         settings.getLoginDetails().then(function(login_details) {
+
             var bank_url = login_details['BankUrl'];
+            var bankingapp_url = login_details['BankingAppUrl'];
             var username = login_details['Username'];
             var password = login_details['Password'];
             var account = login_details['Account'];
@@ -283,16 +301,19 @@ $(document).ready(function () {
             data['memo'] = memo;
             data['cc_me'] = cc_me;
 
-            url = bank_url + '/wp-admin/admin-ajax.php/';
-
-            $.post(url, data, function(response) {
-                if (response.result == 'OK') {
-                    $('#status_connection').text("Cheque sent OK");
-                    $('#status_connection').attr("class", "alert-success");
+            $.post(bankingapp_url, data, function(response, status) {
+                if(status=='success') {
+                    if (response.result == 'OK') {
+                        $('#status_connection').text("Cheque sent OK");
+                        $('#status_connection').attr("class", "alert-success");
+                    }
+                    else {
+                        $('#status_connection').text(response.message);
+                        $('#status_connection').attr("class", "alert-danger");
+                    }
                 }
-                else
-                {
-                    $('#status_connection').text(response.message);
+                else{
+                    $('#status_connection').text('Error: No response from bank.');
                     $('#status_connection').attr("class", "alert-danger");
                 }
             }, 'json');
