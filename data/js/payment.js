@@ -45,13 +45,10 @@ $(document).ready(function () {
 
                 // Read bank login and default account from settings
                 settings.getLoginDetails().then(function(login_details) {
-                    var bank_url = login_details['BankUrl'];
+                    var bankingapp_url = login_details['BankingAppUrl'];
                     var username = login_details['Username'];
                     var password = login_details['Password'];
                     var account = login_details['Account'];
-
-                    // Request a cheque from the bank
-                    url = bank_url + '/wp-admin/admin-ajax.php/';
 
                     data = {};
                     data['action'] = 'request_cheque';
@@ -60,7 +57,7 @@ $(document).ready(function () {
                     data['account'] = account;
                     data['payment_request'] = payment_request_file;
 
-                    $.post(url, data, function(response){
+                    $.post(bankingapp_url, data, function(response){
                         if(response.result == 'OK')
                         {
                             url = payment_request.paylink;

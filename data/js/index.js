@@ -61,12 +61,10 @@ $(document).ready(function () {
         loadData();    
     });
 
-    function updateTransactionList(bank_url, username, password, account){
+    function updateTransactionList(bankingapp_url, username, password, account){
         console.log('Load transaction data from bank.');
 
         $('#latestTransaction').append("<option value='status'>Loading...</option>");
-
-        url = bank_url + '/wp-admin/admin-ajax.php/';
 
         var data = {};
         data['action'] = 'get_transactions';
@@ -74,7 +72,7 @@ $(document).ready(function () {
         data['password'] = password;
         data['account'] = account;
 
-        $.post(url, data, function(response) {
+        $.post(bankingapp_url, data, function(response) {
             if (response.result == "OK") {
                 $('#latestTransaction option[value="status"]').remove();
 
