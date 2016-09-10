@@ -138,9 +138,11 @@ $(document).ready(function () {
                     // If only one account, set is as the default
                     if(response.list.length == 1){
                         account = response.list[0].account_id;
+                        account_currency = response.list[0].currency
 
                         settings.getLoginDetails().then(function(login_details) {
                             login_details['Account'] = account;
+                            login_details['AccountCurrency'] = account_currency;
                             settings.setLoginDetails(login_details).then(function() {
                                 $('#defaultAccount').val(account);
                             });
@@ -286,6 +288,7 @@ $(document).ready(function () {
             var username = login_details['Username'];
             var password = login_details['Password'];
             var account = login_details['Account'];
+            var account_currency = login_details['AccountCurrency'];
 
             data = {};
             data['action'] = 'draw_cheque';
@@ -296,6 +299,7 @@ $(document).ready(function () {
             data['bank_send_to'] = receivers_email;
             data['lock'] = receivers_email;
             data['amount'] = amount;
+            data['currency'] = account_currency;
             data['memo'] = memo;
             data['cc_me'] = cc_me;
 
