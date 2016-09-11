@@ -274,7 +274,7 @@ $(document).ready(function () {
         }
 
         var cc_me = 0;
-        if($('#rememberPassword').is(':checked')){
+        if(($('#SendChequeCcMe').is(':checked'))){
             var cc_me = 1;
         }
 
