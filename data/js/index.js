@@ -171,11 +171,6 @@ $(document).ready(function () {
         chrome.runtime.sendMessage({paymentheader: headerValue});
     });
 
-    $('#searchBankPanel').click(function () {
-        $('#bankSearch').show();
-        $('#connected').hide();
-        $('#disconnected').hide();
-    });
 
     $('#stayConnected').click(function () {
         if($('#stayConnected').is(':checked')){
@@ -240,6 +235,170 @@ $(document).ready(function () {
     $('#selectBank').click(function () {
         var selected_bank = $('#selectBank').val();
         $('#bankSearchAddr').val(selected_bank);
+    });
+
+    /**
+     * Check a list of url for any potential trusted banks. The function takes each url in the list and loads the page
+     * and looks for link to BankingApp resources. If found, then it must be a bank. Banks found are put in the option
+     * list on the Search Bank dialog.
+     *
+     * This function is called recursively for each URL in the list.
+     *
+     * @method checkUrlHasBankingAppInterface
+     * @param {array} url_list - list of URLs
+     */
+    function checkUrlHasBankingAppInterface(url_list) {
+        if(url_list.length) {
+            var url = url_list.pop();
+            var remaining_url_list = url_list;
+            if (url) {
+                $.get(url, function(response, status) {
+                    if (status == 'success') {
+
+                        bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
+                        if(bankingapp_url) {
+
+                            //remain = String(remaining_url_list.length);
+                            //$('#lookUpStatus').text("Loaded: " + url + " R=" + remain);
+
+                            option_text = '<option value="' + url + '">' + url + '</option>';
+                            $('#selectBank').append(option_text);
+                        }
+                    }
+                    checkUrlHasBankingAppInterface(remaining_url_list);
+                });
+            } else {
+                checkUrlHasBankingAppInterface(remaining_url_list);
+            }
+        }else{
+            $('#lookUpStatus').text("Done");
+            $('#lookUpStatus').attr("class", "alert-success");
+        }
+    }
+
+    /**
+     * Search button in the Log-on dialog
+     * Switch to the Search Bank dialog and search through all tabs on the current browser window for potential banks.
+     */
+    $('#searchBankPanel').click(function () {
+        $('#bankSearch').show();
+        $('#connected').hide();
+        $('#disconnected').hide();
+
+        $('#lookUpStatus').text("Searching for banks...");
+        $('#lookUpStatus').attr("class", "alert-warning");
+
+        chrome.tabs.query({currentWindow: true}, function(arrayOfTabs) {
+            var match_list = [];
+            for(i=0; i<arrayOfTabs.length; i++) {
+
+                tab = arrayOfTabs[i];
+                tab_url = tab.url;
+                if(tab_url) {
+                    match = tab_url.match(/^((http|https)\:\/\/[^\/?#]+)(?:[\/?#]|$)/i);
+
+                    if (match && match.length > 1 && typeof match[1] === 'string' && match[1].length > 0) {
+                        if(match_list.indexOf(match[1]) < 0) {
+                            match_list.push(match[1]);
+                        }
+                    }
+
+                    /* Special case for situation when running localhost and site is located in a sub folder */
+                    match2 = tab_url.match(/^(((http|https)\:\/\/localhost\/))[^\/?#]+/i);
+                    if (match2 && match2.length > 1 && typeof match2[0] === 'string' && match2[0].length > 0) {
+                        if(match_list.indexOf(match2[0]) < 0) {
+                            match_list.push(match2[0]);
+                        }
+                    }
+
+                }
+            }
+
+            var lista = '';
+            if (match_list.length > 0) {
+                for(j=0; j<match_list.length; j++){
+
+                    lista = lista + match_list[j] + ' + ';
+                }
+
+                checkUrlHasBankingAppInterface(match_list);
+
+            }
+            else{
+                $('#lookUpStatus').text("No match");
+                $('#lookUpStatus').attr("class", "alert-warning");
+            }
+
+        });
+    });
+
+    /**
+     * Loopup button in the Search for Bank dialog.
+     * Try load a list of trusted banks from the selected url and displays these in the list.
+     */
+    $('#lookUp').click(function () {
+        var lookup_url = $('#bankSearchAddr').val();
+
+        if(!lookup_url.match(/^http/g)) {
+            lookup_url = 'http://' + lookup_url;
+        }
+
+        $('#lookUpStatus').text("Loading..." + lookup_url);
+        $('#lookUpStatus').attr("class", "alert-warning");
+
+        $.get(lookup_url, function(response, status) {
+            if (status == 'success') {
+
+                $('#lookUpStatus').text("Connected!");
+
+                money_address_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+
+                if(money_address_url) {
+                    $('#lookUpStatus').text('URL [' + money_address_url + ']');
+
+                    api_url = money_address_url + '?action=get_trusted_banks';
+
+                    $.getJSON(api_url, function (response, status) {
+                        if (status == 'success') {
+
+                            if (response.result == 'OK') {
+
+                                len = response.trusted_banks.length;
+                                if(len > 0) {
+                                    $('#selectBank').empty();
+
+                                    for (index = 0; index < len; ++index) {
+                                        bank_url = response.trusted_banks[index];
+
+                                        option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
+                                        $('#selectBank').append(option_text);
+                                    }
+
+                                    $('#lookUpStatus').text("OK");
+                                    $('#lookUpStatus').attr("class", "alert-success");
+                                }else{
+                                    $('#lookUpStatus').text("No trusted banks.");
+                                    $('#lookUpStatus').attr("class", "alert-danger");
+                                }
+                            } else {
+                                $('#lookUpStatus').text("Error in request.");
+                                $('#lookUpStatus').attr("class", "alert-danger");
+                            }
+                        } else {
+                            $('#lookUpStatus').text("Error loading bank list");
+                            $('#lookUpStatus').attr("class", "alert-danger");
+                        }
+                    });
+                }else{
+                    $('#lookUpStatus').text("Site has no Payment Interface.");
+                    $('#lookUpStatus').attr("class", "alert-danger");
+                }
+            }else{
+                $('#lookUpStatus').text("Not online");
+                $('#lookUpStatus').attr("class", "alert-danger");
+            }
+        });
+
     });
 
     $('#bankSearchOk').click(function () {

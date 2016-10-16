@@ -24,7 +24,7 @@
    },
    "manifest_version": 2,
    "name": "Bitcoin Banking App",
-   "permissions": [ "<all_urls>", "storage", "contextMenus", "activeTab", "webRequest", "webRequestBlocking" ],
+   "permissions": [ "<all_urls>", "storage", "contextMenus", "tabs", "webRequest", "webRequestBlocking" ],
    "version": "0.0.4",
    "web_accessible_resources": [ "/data/*", "/data/css/*" ]
 }

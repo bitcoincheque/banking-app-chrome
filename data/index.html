@@ -21,9 +21,9 @@
 
         <div class="panel-body">
             <div class="form-group">
-                <label for="bankSearchAddr">Enter bank web address:</label>
+                <label for="bankSearchAddr">Look up trusted banks:</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="bankSearchAddr" placeholder="?">
+                    <input type="text" class="form-control" id="bankSearchAddr" placeholder="Enter bank or payment site url address">
                     <div class="input-group-btn">
                         <button id="lookUp" type="submit" class="btn btn-primary">Lookup</button>
                     </div>
@@ -31,10 +31,8 @@
             </div>
 
             <div class="form-group">
-                <label for="bankSearchAddr">Or select one from the list:</label>
+                <label for="bankSearchAddr">Or select a bank from the list:</label>
                 <select id="selectBank" class="form-control" size="4" multiple >
-                    <option>https://www.bitcoindemobank.com</option>
-                    <option>http://localhost/wordpress</option>
                 </select>
             </div>
 
@@ -49,7 +47,7 @@
             <div class="form-group">
                 <p>Name: <span>Bitcoin Demo Bank</span></p>
                 <p>Link: <span><a href="http://bitcoindemobank.com" target="=_blank">bitcoindemobank.com</a></span></p>
-                <p>Status: <span class="alert-success">Online</span></p>
+                <p>Status: <span id="lookUpStatus" class="alert-warning"></span></p>
             </div>
         </div>
 
