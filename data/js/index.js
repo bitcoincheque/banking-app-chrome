@@ -233,8 +233,56 @@ $(document).ready(function () {
     });
 
     $('#selectBank').click(function () {
-        var selected_bank = $('#selectBank').val();
-        $('#bankSearchAddr').val(selected_bank);
+        var selected_bank_url = $('#selectBank').val();
+        $('#bankSearchAddr').val(selected_bank_url);
+        http_text = '<a href="' + selected_bank_url + '" target="=_blank">' + selected_bank_url + '</a>';
+        $('#BankLink').html(http_text);
+
+        $('#BankName').html("Loading name...");
+        $('#lookUpStatus').text("Connecting...");
+        $('#lookUpStatus').attr("class", "alert-warning");
+
+        $('#bankSearchOk').attr("disabled", true);
+
+        $.get(selected_bank_url, function(response, status) {
+            if (status == 'success') {
+                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+
+                if(payment_interface_url) {
+                    api_url = payment_interface_url + '?action=ping';
+
+                    $.getJSON(api_url, function (response, status) {
+                        if (status == 'success') {
+
+                            if (response.result == 'OK') {
+                                $('#BankName').html(response.name);
+                                $('#lookUpStatus').text("Online");
+                                $('#lookUpStatus').attr("class", "alert-success");
+                                $('#bankSearchOk').attr("disabled", false);
+                            }
+                        }
+                        else
+                        {
+                            $('#BankName').html("");
+                            $('#lookUpStatus').text("Offline (No ping response)");
+                            $('#lookUpStatus').attr("class", "alert-danger");
+                        }
+                    });
+                }
+                else
+                {
+                    $('#BankName').html("");
+                    $('#lookUpStatus').text("Offline (No payment interface)");
+                    $('#lookUpStatus').attr("class", "alert-danger");
+                }
+            }
+            else
+            {
+                $('#BankName').html("");
+                $('#lookUpStatus').text("Offline");
+                $('#lookUpStatus').attr("class", "alert-danger");
+            }
+        });
     });
 
     /**
@@ -271,8 +319,8 @@ $(document).ready(function () {
                 checkUrlHasBankingAppInterface(remaining_url_list);
             }
         }else{
-            $('#lookUpStatus').text("Done");
-            $('#lookUpStatus').attr("class", "alert-success");
+            $('#lookUpStatus').text("Select a bank");
+            $('#lookUpStatus').attr("class", "alert-warning");
         }
     }
 
@@ -284,6 +332,10 @@ $(document).ready(function () {
         $('#bankSearch').show();
         $('#connected').hide();
         $('#disconnected').hide();
+
+        $('#selectBank').empty();
+
+        $('#bankSearchOk').attr("disabled", true);
 
         $('#lookUpStatus').text("Searching for banks...");
         $('#lookUpStatus').attr("class", "alert-warning");
@@ -332,6 +384,10 @@ $(document).ready(function () {
         });
     });
 
+    $('#bankSearchAddr').keydown(function () {
+        $('#bankSearchOk').attr("disabled", true);
+    });
+
     /**
      * Loopup button in the Search for Bank dialog.
      * Try load a list of trusted banks from the selected url and displays these in the list.
@@ -343,58 +399,73 @@ $(document).ready(function () {
             lookup_url = 'http://' + lookup_url;
         }
 
-        $('#lookUpStatus').text("Loading..." + lookup_url);
+        $('#lookUpStatus').text("Connecting...");
         $('#lookUpStatus').attr("class", "alert-warning");
+        $('#bankSearchOk').attr("disabled", true);
+
 
         $.get(lookup_url, function(response, status) {
             if (status == 'success') {
 
-                $('#lookUpStatus').text("Connected!");
+                $('#lookUpStatus').text("Loading info...");
 
-                money_address_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
 
-                if(money_address_url) {
-                    $('#lookUpStatus').text('URL [' + money_address_url + ']');
-
-                    api_url = money_address_url + '?action=get_trusted_banks';
-
+                if(payment_interface_url) {
+                    api_url = payment_interface_url + '?action=ping';
                     $.getJSON(api_url, function (response, status) {
                         if (status == 'success') {
 
                             if (response.result == 'OK') {
+                                $('#BankName').html(response.name);
 
-                                len = response.trusted_banks.length;
-                                if(len > 0) {
-                                    $('#selectBank').empty();
+                                $('#bankSearchOk').attr("disabled", false);
 
-                                    for (index = 0; index < len; ++index) {
-                                        bank_url = response.trusted_banks[index];
+                                api_url = payment_interface_url + '?action=get_trusted_banks';
+                                $.getJSON(api_url, function (response, status) {
+                                    if (status == 'success') {
 
-                                        option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
-                                        $('#selectBank').append(option_text);
+                                        if (response.result == 'OK') {
+
+                                            len = response.trusted_banks.length;
+                                            if(len > 0) {
+                                                $('#selectBank').empty();
+
+                                                for (index = 0; index < len; ++index) {
+                                                    bank_url = response.trusted_banks[index];
+
+                                                    option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
+                                                    $('#selectBank').append(option_text);
+                                                }
+
+                                                $('#lookUpStatus').text("Online");
+                                                $('#lookUpStatus').attr("class", "alert-success");
+                                            }
+                                        } else {
+                                            $('#lookUpStatus').text("Connect error. Error in response.");
+                                            $('#lookUpStatus').attr("class", "alert-danger");
+                                        }
+                                    } else {
+                                        $('#lookUpStatus').text("Connect error. Error in request.");
+                                        $('#lookUpStatus').attr("class", "alert-danger");
                                     }
+                                });
 
-                                    $('#lookUpStatus').text("OK");
-                                    $('#lookUpStatus').attr("class", "alert-success");
-                                }else{
-                                    $('#lookUpStatus').text("No trusted banks.");
-                                    $('#lookUpStatus').attr("class", "alert-danger");
-                                }
-                            } else {
-                                $('#lookUpStatus').text("Error in request.");
-                                $('#lookUpStatus').attr("class", "alert-danger");
                             }
-                        } else {
-                            $('#lookUpStatus').text("Error loading bank list");
+                        }
+                        else
+                        {
+                            $('#BankName').html("");
+                            $('#lookUpStatus').text("Connect error. No ping respons.");
                             $('#lookUpStatus').attr("class", "alert-danger");
                         }
                     });
                 }else{
-                    $('#lookUpStatus').text("Site has no Payment Interface.");
+                    $('#lookUpStatus').text("Connect error. No payment interface.");
                     $('#lookUpStatus').attr("class", "alert-danger");
                 }
             }else{
-                $('#lookUpStatus').text("Not online");
+                $('#lookUpStatus').text("Offline");
                 $('#lookUpStatus').attr("class", "alert-danger");
             }
         });
