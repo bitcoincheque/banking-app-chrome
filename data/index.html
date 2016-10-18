@@ -21,18 +21,18 @@
 
         <div class="panel-body">
             <div class="form-group">
-                <label for="bankSearchAddr">Look up trusted banks:</label>
+                <label for="bankSearchAddr">Enter your bank or web-shop address:</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="bankSearchAddr" placeholder="Enter bank or payment site url address">
+                    <input type="text" class="form-control" id="bankSearchAddr" placeholder="https://www.">
                     <div class="input-group-btn">
-                        <button id="lookUp" type="submit" class="btn btn-primary">Lookup</button>
+                        <button id="BankSearchDetect" type="submit" class="btn btn-primary">Detect</button>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="selectBank">Or select a bank from the list:</label>
-                <select id="selectBank" class="form-control" size="4" multiple >
+                <label for="selectAutoDetectedBank">Or select a auto-detected bank:</label>
+                <select id="selectAutoDetectedBank" class="form-control" size="4" multiple >
                 </select>
             </div>
 
@@ -45,9 +45,9 @@
 
         <div class="panel-footer">
             <div class="form-group">
-                <p>Name: <span id="BankName"></span></p>
-                <p>Link: <span id="BankLink"></span></p>
-                <p>Status: <span id="lookUpStatus" class="alert-warning"></span></p>
+                <p><span id="BankSearchLink"></span></p>
+                <p><span id="BankSearchName"></span></p>
+                <p><span id="BankSearchStatus" class="alert-warning"></span></p>
             </div>
         </div>
 
@@ -95,20 +95,18 @@
                 <div class="input-group">
                     <label><input id="rememberPassword" type="checkbox">Remember password</label>
                 </div>
-                <div class="input-group">
-                    <label><input id="stayConnected" type="checkbox">Stay connected</label>
-                </div>
             </div>
         </div>
 
         <div class="panel-footer">
             <div class="row">
                 <div class="col-xs-6">
-                    <p><span id="selectedBankLink"></span></p>
-                    <p>Status: <span id="status_link" class="alert-warning">Disconnected</span></p>
+                    <p><span id="ConnectBankLink"></span></p>
+                    <p><span id="ConnectBankName"></span></p>
+                    <p><span id="ConnectBankStatus" class="alert-warning"></span></p>
                 </div>
                 <div class="col-xs-6">
-                    <button type="button" id="connectBank" class="btn btn-primary pull-right">Connect</button>
+                    <button type="button" id="ConnectBank" class="btn btn-primary pull-right">Connect</button>
                 </div>
             </div>
         </div>
@@ -229,6 +227,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <button type="button" id="RemoveLoginDetails" class="btn btn-primary">Remove login info</button>
+                        </div>
                     </div>
 
                 </div>
@@ -238,8 +239,9 @@
         <div class="panel-footer">
             <div class="row">
                 <div class="col-xs-6">
-                    <p><span id="bankWebAddr"></span></p>
-                    <p>Link: <span id="status_connection" class="alert-warning">Connecting...</span></p>
+                    <p><span id="ConnectedBankLink"></span></p>
+                    <p><span id="ConnectedBankName"></span></p>
+                    <p><span id="ConnectedBankStatus" class="alert-warning"></span></p>
                 </div>
                 <div class="col-xs-6">
                     <button type="button" id="disconnectBank" class="btn btn-primary pull-right">Disconnect</button>
