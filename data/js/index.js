@@ -8,9 +8,38 @@
  * Controls index.html, the main chrome window
  */
 
+const PANEL_SEARCH = 0;
+const PANEL_LOG_IN = 1;
+const PANEL_TRANSACTION = 2;
+const PANEL_SEND = 3;
+const PANEL_GET = 4;
+const PANEL_OPTION = 5;
+
 $(document).ready(function () {
     var SATHOSI = 100000000;
 
+    function selectPanel(panel){
+        switch(panel){
+            case PANEL_SEARCH:
+                $('#bankSearch').show();
+                $('#disconnected').hide();
+                $('#connected').hide();
+                break;
+            case PANEL_LOG_IN:
+                $('#bankSearch').hide();
+                $('#disconnected').show();
+                $('#connected').hide();
+                break;
+            case PANEL_TRANSACTION:
+                $('#bankSearch').hide();
+                $('#disconnected').hide();
+                $('#connected').show();
+
+                $('a[href="#tabAccount"]').tab('show');
+                break;
+        };
+
+        setBankInfo('');
     }
 
     function setBankUrlAndName(url, name) {
@@ -208,9 +237,7 @@ $(document).ready(function () {
     $('#mainbody').ready( function(){
         console.log('Load data from settings.');
 
-        $('#bankSearch').hide();
-        $('#connected').hide();
-        $('#disconnected').show();
+        selectPanel(PANEL_LOG_IN);
 
         settings.getLoginDetails().then(function(login_details) {
             var bank_url = login_details['BankUrl'];
@@ -243,25 +270,18 @@ $(document).ready(function () {
             if(bank_url == '')
             {
                 // If no bank log-in information is availeble, start the app i Search dialog
-                $('#bankSearch').show();
-                $('#disconnected').hide();
-                $('#connected').hide();
+                selectPanel(PANEL_SEARCH);
 
                 $('#bankSearchCancel').hide();
 
                 autoDetectBanks();
             }else{
                 if(stayConnected == 1){
-                    $('#bankSearch').hide();
-                    $('#disconnected').hide();
-                    $('#connected').show();
-
+                    selectPanel(PANEL_TRANSACTION);
                     setBankUrlAndName(bank_url, bank_name);
                     loadDataFromBank();
                 } else {
-                    $('#bankSearch').hide();
-                    $('#disconnected').show();
-                    $('#connected').hide();
+                    selectPanel(PANEL_LOG_IN);
 
                     setBankUrlAndName(bank_url, bank_name);
                     updateBankLink(bank_url, "ONLINE");
@@ -281,6 +301,7 @@ $(document).ready(function () {
     });
 
     $('#ConnectBank').click(function () {
+        $('#ConnectBank').attr("disabled", true);
         setBankStatusYello("CONNECTING");
 
         var login_details = {};
@@ -291,7 +312,6 @@ $(document).ready(function () {
         login_details['RememberPasswd'] = 0;
 
         $.get(login_details['BankUrl'], function(response, status) {
-
             if (status == 'success') {
 
                 payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
@@ -339,9 +359,8 @@ $(document).ready(function () {
     });
 
     $('#disconnectBank').click(function () {
-        $('#bankSearch').hide();
-        $('#connected').hide();
-        $('#disconnected').show();
+        selectPanel(PANEL_LOG_IN);
+
         setBankStatusGreen("ONLINE");
 
         settings.getLoginDetails().then(function(login_details) {
@@ -768,9 +787,7 @@ $(document).ready(function () {
             login_details['AccountCurrency'] = '';
 
             settings.setLoginDetails(login_details).then(function() {
-                $('#bankSearch').show();
-                $('#disconnected').hide();
-                $('#connected').hide();
+                selectPanel(PANEL_SEARCH);
 
                 $('#bankSearchOk').attr("disabled", true);
                 $('#bankSearchCancel').hide();
