@@ -11,19 +11,37 @@
 $(document).ready(function () {
     var SATHOSI = 100000000;
 
-    function setBankName(name) {
-        $('#BankSearchName').text(name);
-        $('#ConnectBankName').text(name);
-        $('#ConnectedBankName').text(name);
     }
 
-    function setBankUrl(url, linking) {
-        if(linking) {
-            url = '<a href="'+url+'" target="_blank"><u>'+url+'</u></a>'
+    function setBankUrlAndName(url, name) {
+        if(name==''){
+            name = url;
         }
-        $('#BankSearchLink').html(url);
-        $('#ConnectBankLink').html(url);
-        $('#ConnectedBankLink').html(url);
+        if(url == '' && name == '') {
+            $('#BankSearchName').text('');
+            $('#ConnectBankName').text('');
+            $('#ConnectedBankName').text('');
+
+            $('#BankSearchLink').html('');
+            $('#ConnectBankLink').html('');
+            $('#ConnectedBankLink').html('');
+        }else if(url == '') {
+            $('#BankSearchName').text(name);
+            $('#ConnectBankName').text(name);
+            $('#ConnectedBankName').text(name);
+        }else{
+            url = '<a href="' + url + '" target="_blank">' + name + '</a>'
+
+            $('#BankSearchLink').html(url);
+            $('#ConnectBankLink').html(url);
+            $('#ConnectedBankLink').html(url);
+        }
+    }
+
+    function setBankInfo(info) {
+        $('#BankSearInfo').text(info);
+        $('#ConnectBankInfo').text(info);
+        $('#ConnectedBankInfo').text(info);
     }
 
     function setBankStatus(status_text, status_colour) {
@@ -67,7 +85,6 @@ $(document).ready(function () {
                         $.getJSON(api_url, function (response, status) {
                             if (status == 'success') {
                                 if (response.result == 'OK') {
-                                    setBankName(response.name);
                                     setBankStatusGreen(status_msg);
                                     $('#ConnectBank').attr("disabled", false);
                                 } else {
@@ -120,6 +137,7 @@ $(document).ready(function () {
                 }
 
                 setBankStatusGreen("CONNECTED");
+                $('#ConnectBank').attr("disabled", false);
             }
             else
             {
@@ -238,16 +256,14 @@ $(document).ready(function () {
                     $('#disconnected').hide();
                     $('#connected').show();
 
-                    setBankUrl(bank_url, true);
-                    setBankName(bank_name);
+                    setBankUrlAndName(bank_url, bank_name);
                     loadDataFromBank();
                 } else {
                     $('#bankSearch').hide();
                     $('#disconnected').show();
                     $('#connected').hide();
 
-                    setBankUrl(bank_url, true);
-                    setBankName(bank_name);
+                    setBankUrlAndName(bank_url, bank_name);
                     updateBankLink(bank_url, "ONLINE");
                 }
             }
@@ -278,33 +294,46 @@ $(document).ready(function () {
 
             if (status == 'success') {
 
+                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
 
-                bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
+                if(payment_interface_url) {
+                    api_url = payment_interface_url + '?action=ping';
+                    $.getJSON(api_url, function (response, status) {
+                        if (status == 'success') {
+                            if (response.result == 'OK') {
 
-                if(bankingapp_url) {
-                    login_details['BankingAppUrl'] = bankingapp_url;
+                                login_details['BankName'] = response.name;
 
-                    if ($('#rememberPassword').is(':checked')) {
-                        login_details['RememberPasswd'] = 1;
-                    }
+                                if (bankingapp_url) {
+                                    login_details['BankingAppUrl'] = bankingapp_url;
 
-                    login_details['StayConnected'] = 1;
+                                    if ($('#rememberPassword').is(':checked')) {
+                                        login_details['RememberPasswd'] = 1;
+                                    }
 
-                    setBankStatusYello("LOAD DATA");
+                                    login_details['StayConnected'] = 1;
 
+                                    setBankStatusYello("LOAD DATA");
 
-                    settings.setLoginDetails(login_details).then(function () {
-                        $('#bankSearch').hide();
-                        $('#connected').show();
-                        $('#disconnected').hide();
-
-                        $('a[href="#tabAccount"]').tab('show');
-
-                        loadDataFromBank();
+                                    settings.setLoginDetails(login_details).then(function () {
+                                        selectPanel(PANEL_TRANSACTION);
+                                        loadDataFromBank();
+                                    });
+                                } else {
+                                    setBankStatusRed('ERROR');
+                                    setBankInfo('No payment interface')
+                                }
+                            }
+                        }
                     });
-                }else{
-                    setBankStatusRed("ERROR (No bank interface)");
+                } else {
+                    setBankStatusRed('ERROR');
+                    setBankInfo('No payment interface')
                 }
+            } else {
+                setBankStatusRed('OFFLINE');
+                setBankInfo('')
             }
         });
     });
@@ -341,7 +370,7 @@ $(document).ready(function () {
 
             if (url) {
                 $('#BankSearchLink').text(url);
-                setBankUrl(url, false);
+                setBankUrlAndName('', url);
                 $.get(url, function(response, status) {
                     if (status == 'success') {
 
@@ -353,6 +382,7 @@ $(document).ready(function () {
                             $.getJSON(api_url, function (response, status) {
                                 if (status == 'success') {
                                     if (response.result == 'OK') {
+                                        setBankUrlAndName('', response.name);
                                         setBankStatusGreen("LOADING");
 
                                         if (bankingapp_url) {
@@ -395,14 +425,13 @@ $(document).ready(function () {
                 checkUrlHasBankingAppInterface(remaining_url_list);
             }
         }else{
-            setBankUrl('');
+            setBankUrlAndName('', '');
             setBankStatus('');
         }
     }
 
     function autoDetectBanks()
     {
-        setBankName("");
         setBankStatusYello("DETECTING");
 
         chrome.tabs.query({currentWindow: true}, function(arrayOfTabs) {
@@ -427,7 +456,6 @@ $(document).ready(function () {
                             match_list.push(match2[0]);
                         }
                     }
-
                 }
             }
 
@@ -439,10 +467,10 @@ $(document).ready(function () {
                 }
 
                 checkUrlHasBankingAppInterface(match_list);
-
             }
             else{
-                setBankStatusYello("No match");
+                setBankStatusYello("");
+                setBankInfo('No banks detected')
             }
 
         });
@@ -453,9 +481,7 @@ $(document).ready(function () {
      * Switch to the Search Bank dialog and search through all tabs on the current browser window for potential banks.
      */
     $('#searchBankPanel').click(function () {
-        $('#bankSearch').show();
-        $('#connected').hide();
-        $('#disconnected').hide();
+        selectPanel(PANEL_SEARCH);
 
         $('#bankSearchAddr').val('');
 
@@ -480,11 +506,13 @@ $(document).ready(function () {
     });
 
     /**
-     * Loopup button in the Search for Bank dialog.
+     * Detect button in the Search for Bank dialog.
      * Try load a list of trusted banks from the selected url and displays these in the list.
      */
     $('#BankSearchDetect').click(function () {
         var search_url = $('#bankSearchAddr').val();
+
+        setBankInfo('');
 
         if(search_url == "") {
             autoDetectBanks();
@@ -493,8 +521,7 @@ $(document).ready(function () {
                 search_url = 'http://' + search_url;
             }
 
-            setBankUrl(search_url, true);
-            setBankName("");
+            setBankUrlAndName(search_url, '');
             setBankStatusYello("DETECTING");
             $('#bankSearchOk').attr("disabled", true);
 
@@ -513,13 +540,14 @@ $(document).ready(function () {
 
                                 if (response.result == 'OK') {
                                     bank_name = response.name;
-                                    setBankName(bank_name);
+                                    setBankUrlAndName(search_url, bank_name);
 
                                     api_url = payment_interface_url + '?action=get_trusted_banks';
                                     $.getJSON(api_url, function (response, status) {
                                         if (status == 'success') {
 
                                             if (response.result == 'OK') {
+                                                setBankStatusGreen("ONLINE");
 
                                                 len = response.trusted_banks.length;
                                                 if(len > 0) {
@@ -532,33 +560,35 @@ $(document).ready(function () {
                                                     }
 
                                                     if(bankingapp_url) {
-                                                        setBankStatusGreen("ONLINE");
                                                         $('#bankSearchOk').attr("disabled", false);
-                                                    }else{
-                                                        setBankStatusRed("");
-                                                    }
-
-                                                    if(len == 0) {
-                                                        info = bank_name;
-                                                        setBankName(info);
-                                                        if(!bankingapp_url) {
-                                                            setBankStatusRed("NO BANK");
+                                                        if(len == 0) {
+                                                            setBankInfo("This bank trusts no other banks.");
+                                                        } else if(len == 1){
+                                                            info = "This bank trusts 1 other bank.";
+                                                            setBankInfo(info);
+                                                        } else {
+                                                            info = "This bank trusts " + len + " other banks.";
+                                                            setBankInfo(info);
                                                         }
-                                                    } else if(len == 1){
-                                                        info = bank_name + " (1 trusted bank)";
-                                                        setBankName(info);
-                                                        setBankStatusRed("");
-                                                    } else {
-                                                        info = bank_name + " (" + len + " trusted banks)";
-                                                        setBankName(info);
-                                                        setBankStatusRed("");
+                                                    }else{
+                                                        if(len == 0) {
+                                                            setBankInfo("No site don't trusts any banks.");
+                                                        } else if(len == 1){
+                                                            info = "This site trusts 1 bank";
+                                                            setBankInfo(info);
+                                                        } else {
+                                                            info = "This site trusts " + len + " banks.";
+                                                            setBankInfo(info);
+                                                        }
                                                     }
                                                 }
                                             } else {
-                                                setBankStatusRed("ERROR (Error in response)");
+                                                setBankStatusRed("ERROR");
+                                                setBankInfo('Error in response');
                                             }
                                         } else {
-                                            setBankStatusRed("ERROR (Error in request)");
+                                            setBankStatusRed("ERROR");
+                                            setBankInfo('Error in request');
                                         }
                                     });
 
@@ -566,17 +596,20 @@ $(document).ready(function () {
                             }
                             else
                             {
-                                setBankName('');
-                                setBankStatusRed("ERROR (No ping respons)");
+                                setBankInfo('');
+                                setBankStatusRed("ERROR");
+                                setBankInfo('No ping response');
                             }
                         });
                     }else{
-                        setBankName("");
-                        setBankStatusRed("ERROR (No payment interface)");
+                        setBankInfo("");
+                        setBankStatusRed("ERROR");
+                        setBankInfo('No payment interface');
                     }
                 }else{
-                    setBankName("");
+                    setBankInfo("");
                     setBankStatusRed("OFFLINE");
+                    setBankInfo('');
                 }
             });
 
@@ -587,10 +620,10 @@ $(document).ready(function () {
         var selected_bank_url = $('#selectAutoDetectedBank').val();
 
         $('#bankSearchAddr').val(selected_bank_url);
-        setBankUrl(selected_bank_url, true);
 
-        setBankName('Loading info...');
+        setBankUrlAndName(selected_bank_url, '');
         setBankStatusYello("PROBING");
+        setBankInfo('');
 
         $('#bankSearchOk').attr("disabled", true);
         $('#BankSearchDetect').attr("disabled", false);
@@ -606,28 +639,31 @@ $(document).ready(function () {
                         if (status == 'success') {
 
                             if (response.result == 'OK') {
-                                setBankName(response.name);
+                                setBankUrlAndName(selected_bank_url, response.name);
                                 setBankStatusGreen("ONLINE");
                                 $('#bankSearchOk').attr("disabled", false);
                             }
                         }
                         else
                         {
-                            setBankName('');
-                            setBankStatusRed("ERROR (No ping response)");
+                            setBankUrlAndName('', '');
+                            setBankStatusRed('ERROR');
+                            setBankInfo('No ping response')
                         }
                     });
                 }
                 else
                 {
-                    setBankName('');
-                    setBankStatusRed("ERROR (No payment interface)");
+                    setBankUrlAndName('', '');
+                    setBankStatusRed("ERROR");
+                    setBankInfo('No payment interface')
                 }
             }
             else
             {
-                setBankName('');
+                setBankUrlAndName('', '');
                 setBankStatusRed("OFFLINE");
+                setBankInfo('')
             }
         });
     });
@@ -639,24 +675,19 @@ $(document).ready(function () {
         $('#bankAddress').append(option_text);
         $('#bankAddress').val(selected_bank);
 
-        $('#bankSearch').hide();
-        $('#connected').hide();
-        $('#disconnected').show();
+        selectPanel(PANEL_LOG_IN);
 
         $('#ConnectBank').attr("disabled", false);
     });
 
     $('#bankSearchCancel').click(function () {
-        $('#bankSearch').hide();
-        $('#connected').hide();
-        $('#disconnected').show();
+        selectPanel(PANEL_LOG_IN);
 
         settings.getLoginDetails().then(function(login_details) {
             var bank_url = login_details['BankUrl'];
             var bank_name = login_details['BankName'];
 
-            setBankUrl(bank_url, true);
-            setBankName(bank_name);
+            setBankUrlAndName(bank_url, bank_name);
             updateBankLink(bank_url, "ONLINE");
         });
     });
