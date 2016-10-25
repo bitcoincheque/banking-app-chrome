@@ -234,142 +234,6 @@ $(document).ready(function () {
         });
     }
 
-    $('#mainbody').ready( function(){
-        console.log('Load data from settings.');
-
-        selectPanel(PANEL_LOG_IN);
-
-        settings.getLoginDetails().then(function(login_details) {
-            var bank_url = login_details['BankUrl'];
-            var bank_name = login_details['BankName'];
-            var username = login_details['Username'];
-            var password = login_details['Password'];
-            var rememberPasswd = login_details['RememberPasswd'];
-            var stayConnected = login_details['StayConnected'];
-
-            console.log('BankUrl=' + bank_url);
-            console.log('Username=' + username);
-            console.log('RememberPasswd=' + rememberPasswd);
-            console.log('StayConnected=' + stayConnected);
-
-            $('#username').val(username);
-            $('#password').val(password);
-
-
-            option_text = '<option value="' + bank_url + '" selected>' + bank_url + '</option>';
-            $('#bankAddress').append(option_text);
-
-            if(rememberPasswd == 1) {
-                $('#rememberPassword').prop('checked', true);
-            }
-
-            $('#ConnectBank').attr("disabled", true);
-            $('#BankSearchDetect').attr("disabled", true);
-            $('#bankSearchOk').attr("disabled", true);
-
-            if(bank_url == '')
-            {
-                // If no bank log-in information is availeble, start the app i Search dialog
-                selectPanel(PANEL_SEARCH);
-
-                $('#bankSearchCancel').hide();
-
-                autoDetectBanks();
-            }else{
-                if(stayConnected == 1){
-                    selectPanel(PANEL_TRANSACTION);
-                    setBankUrlAndName(bank_url, bank_name);
-                    loadDataFromBank();
-                } else {
-                    selectPanel(PANEL_LOG_IN);
-
-                    setBankUrlAndName(bank_url, bank_name);
-                    updateBankLink(bank_url, "ONLINE");
-                }
-            }
-        });
-    });
-
-    $('#defaultAccount').click(function () {
-        var def_account = $('#defaultAccount').val();
-    });
-
-    $('#savePaymentBroswerHeader').click(function () {
-        var headerValue = $('#paymentBroswerHeader').val();
-        chrome.storage.sync.set({'PaymentBroswerHeader': headerValue});
-        chrome.runtime.sendMessage({paymentheader: headerValue});
-    });
-
-    $('#ConnectBank').click(function () {
-        $('#ConnectBank').attr("disabled", true);
-        setBankStatusYello("CONNECTING");
-
-        var login_details = {};
-        login_details['BankUrl'] = $('#bankAddress').val();
-        login_details['BankName'] = $('#BankSearchName').text();
-        login_details['Username'] = $('#username').val();
-        login_details['Password'] = $('#password').val();
-        login_details['RememberPasswd'] = 0;
-
-        $.get(login_details['BankUrl'], function(response, status) {
-            if (status == 'success') {
-
-                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
-                var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
-
-                if(payment_interface_url) {
-                    api_url = payment_interface_url + '?action=ping';
-                    $.getJSON(api_url, function (response, status) {
-                        if (status == 'success') {
-                            if (response.result == 'OK') {
-
-                                login_details['BankName'] = response.name;
-
-                                if (bankingapp_url) {
-                                    login_details['BankingAppUrl'] = bankingapp_url;
-
-                                    if ($('#rememberPassword').is(':checked')) {
-                                        login_details['RememberPasswd'] = 1;
-                                    }
-
-                                    login_details['StayConnected'] = 1;
-
-                                    setBankStatusYello("LOAD DATA");
-
-                                    settings.setLoginDetails(login_details).then(function () {
-                                        selectPanel(PANEL_TRANSACTION);
-                                        loadDataFromBank();
-                                    });
-                                } else {
-                                    setBankStatusRed('ERROR');
-                                    setBankInfo('No payment interface')
-                                }
-                            }
-                        }
-                    });
-                } else {
-                    setBankStatusRed('ERROR');
-                    setBankInfo('No payment interface')
-                }
-            } else {
-                setBankStatusRed('OFFLINE');
-                setBankInfo('')
-            }
-        });
-    });
-
-    $('#disconnectBank').click(function () {
-        selectPanel(PANEL_LOG_IN);
-
-        setBankStatusGreen("ONLINE");
-
-        settings.getLoginDetails().then(function(login_details) {
-            login_details['StayConnected'] = 0;
-            settings.setLoginDetails(login_details).then(function() {
-            });
-        })
-    });
-
     /**
      * Check a list of url for any potential trusted banks. The function takes each url in the list and loads the page
      * and looks for link to BankingApp resources. If found, then it must be a bank. Banks found are put in the option
@@ -499,17 +363,62 @@ $(document).ready(function () {
      * Search button in the Log-on dialog
      * Switch to the Search Bank dialog and search through all tabs on the current browser window for potential banks.
      */
-    $('#searchBankPanel').click(function () {
-        selectPanel(PANEL_SEARCH);
+    $('#mainbody').ready( function(){
+        console.log('Load data from settings.');
 
-        $('#bankSearchAddr').val('');
+        selectPanel(PANEL_LOG_IN);
 
-        $('#selectAutoDetectedBank').empty();
+        settings.getLoginDetails().then(function(login_details) {
+            var bank_url = login_details['BankUrl'];
+            var bank_name = login_details['BankName'];
+            var username = login_details['Username'];
+            var password = login_details['Password'];
+            var rememberPasswd = login_details['RememberPasswd'];
+            var stayConnected = login_details['StayConnected'];
 
         $('#BankSearchDetect').attr("disabled", true);
         $('#bankSearchOk').attr("disabled", true);
+            console.log('BankUrl=' + bank_url);
+            console.log('Username=' + username);
+            console.log('RememberPasswd=' + rememberPasswd);
+            console.log('StayConnected=' + stayConnected);
 
-        autoDetectBanks();
+            $('#username').val(username);
+            $('#password').val(password);
+
+
+            option_text = '<option value="' + bank_url + '" selected>' + bank_url + '</option>';
+            $('#bankAddress').append(option_text);
+
+            if(rememberPasswd == 1) {
+                $('#rememberPassword').prop('checked', true);
+            }
+
+            $('#ConnectBank').attr("disabled", true);
+            $('#BankSearchDetect').attr("disabled", true);
+            $('#bankSearchOk').attr("disabled", true);
+
+            if(bank_url == '')
+            {
+                // If no bank log-in information is availeble, start the app i Search dialog
+                selectPanel(PANEL_SEARCH);
+
+                $('#bankSearchCancel').hide();
+
+                autoDetectBanks();
+            }else{
+                if(stayConnected == 1){
+                    selectPanel(PANEL_TRANSACTION);
+                    setBankUrlAndName(bank_url, bank_name);
+                    loadDataFromBank();
+                } else {
+                    selectPanel(PANEL_LOG_IN);
+
+                    setBankUrlAndName(bank_url, bank_name);
+                    updateBankLink(bank_url, "ONLINE");
+                }
+            }
+        });
     });
 
     $('#bankSearchAddr').keydown(function () {
@@ -708,6 +617,102 @@ $(document).ready(function () {
 
             setBankUrlAndName(bank_url, bank_name);
             updateBankLink(bank_url, "ONLINE");
+        });
+    });
+
+    $('#searchBankPanel').click(function () {
+        selectPanel(PANEL_SEARCH);
+
+        $('#bankSearchAddr').val('');
+
+        $('#selectAutoDetectedBank').empty();
+
+        $('#BankSearchDetect').attr("disabled", true);
+        $('#bankSearchOk').attr("disabled", true);
+
+        autoDetectBanks();
+    });
+
+    $('#ConnectBank').click(function () {
+        $('#ConnectBank').attr("disabled", true);
+        setBankStatusYello("CONNECTING");
+
+        var login_details = {};
+        login_details['BankUrl'] = $('#bankAddress').val();
+        login_details['BankName'] = $('#BankSearchName').text();
+        login_details['Username'] = $('#username').val();
+        login_details['Password'] = $('#password').val();
+        login_details['RememberPasswd'] = 0;
+
+        $.get(login_details['BankUrl'], function(response, status) {
+            if (status == 'success') {
+
+                var payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
+
+                if(payment_interface_url) {
+                    api_url = payment_interface_url + '?action=ping';
+                    $.getJSON(api_url, function (response, status) {
+                        if (status == 'success') {
+                            if (response.result == 'OK') {
+
+                                login_details['BankName'] = response.name;
+
+                                if (bankingapp_url) {
+                                    login_details['BankingAppUrl'] = bankingapp_url;
+
+                                    if ($('#rememberPassword').is(':checked')) {
+                                        login_details['RememberPasswd'] = 1;
+                                    }
+
+                                    login_details['StayConnected'] = 1;
+
+                                    setBankStatusYello("LOAD DATA");
+
+                                    settings.setLoginDetails(login_details).then(function () {
+                                        selectPanel(PANEL_TRANSACTION);
+                                        loadDataFromBank();
+                                    });
+                                } else {
+                                    setBankStatusRed('ERROR');
+                                    setBankInfo('No payment interface')
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    setBankStatusRed('ERROR');
+                    setBankInfo('No payment interface')
+                }
+            } else {
+                setBankStatusRed('OFFLINE');
+                setBankInfo('')
+            }
+        });
+    });
+
+    /* The following functions for the four signed-in Panels */
+    /**
+     * Disconnect button
+     */
+    $('#disconnectBank').click(function () {
+        selectPanel(PANEL_LOG_IN);
+
+        setBankStatusGreen("ONLINE");
+
+        settings.getLoginDetails().then(function(login_details) {
+            login_details['StayConnected'] = 0;
+            settings.setLoginDetails(login_details).then(function() {
+            });
+        })
+    });
+
+    $('#defaultAccount').click(function () {
+        var def_account = $('#defaultAccount').val();
+
+        settings.getLoginDetails().then(function(login_details) {
+            login_details['Account'] = def_account;
+            settings.setLoginDetails(login_details);
         });
     });
 
