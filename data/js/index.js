@@ -23,25 +23,28 @@ $(document).ready(function () {
      * @param panel : String : One of the PANEL_ consts.
      */
     function selectPanel(panel){
-        switch(panel){
-            case PANEL_SEARCH:
+        switch(panel) {
+            case PANEL_SEARCH: {
                 $('#bankSearch').show();
                 $('#disconnected').hide();
                 $('#connected').hide();
                 break;
-            case PANEL_LOG_IN:
+            }
+            case PANEL_LOG_IN: {
                 $('#bankSearch').hide();
                 $('#disconnected').show();
                 $('#connected').hide();
                 break;
-            case PANEL_TRANSACTION:
+            }
+            case PANEL_TRANSACTION:{
                 $('#bankSearch').hide();
                 $('#disconnected').hide();
                 $('#connected').show();
 
                 $('a[href="#tabAccount"]').tab('show');
                 break;
-        };
+            }
+        }
 
         setBankInfo('');
     }
@@ -68,7 +71,7 @@ $(document).ready(function () {
             $('#ConnectBankName').text(name);
             $('#ConnectedBankName').text(name);
         }else{
-            url = '<a href="' + url + '" target="_blank">' + name + '</a>'
+            url = '<a href="' + url + '" target="_blank">' + name + '</a>';
 
             $('#BankSearchLink').html(url);
             $('#ConnectBankLink').html(url);
@@ -366,7 +369,7 @@ $(document).ready(function () {
                     }
 
                     /* Special case for situation when running localhost and site is located in a sub folder */
-                    match2 = tab_url.match(/^(((http|https)\:\/\/localhost\/))[^\/?#]+/i);
+                    match2 = tab_url.match(/^((http|https)\:\/\/localhost\/)[^\/?#]+/i);
                     if (match2 && match2.length > 1 && typeof match2[0] === 'string' && match2[0].length > 0) {
                         if(match_list.indexOf(match2[0]) < 0) {
                             match_list.push(match2[0]);
@@ -604,10 +607,10 @@ $(document).ready(function () {
 
         $.get(selected_bank_url, function(response, status) {
             if (status == 'success') {
-                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                var payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
 
                 if(payment_interface_url) {
-                    api_url = payment_interface_url + '?action=ping';
+                    var api_url = payment_interface_url + '?action=ping';
 
                     $.getJSON(api_url, function (response, status) {
                         if (status == 'success') {
@@ -800,7 +803,7 @@ $(document).ready(function () {
 
         var cc_me = 0;
         if(($('#SendChequeCcMe').is(':checked'))){
-            var cc_me = 1;
+            cc_me = 1;
         }
 
         $('#status_connection').text("Sending cheque...");
