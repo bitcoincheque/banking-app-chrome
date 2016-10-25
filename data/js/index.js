@@ -18,6 +18,10 @@ const PANEL_OPTION = 5;
 $(document).ready(function () {
     var SATHOSI = 100000000;
 
+    /**
+     * Change panel
+     * @param panel : String : One of the PANEL_ consts.
+     */
     function selectPanel(panel){
         switch(panel){
             case PANEL_SEARCH:
@@ -42,6 +46,11 @@ $(document).ready(function () {
         setBankInfo('');
     }
 
+    /**
+     * Displays a link with or without hyperlink
+     * @param url : String : Url to link
+     * @param name : String : Text to be displayed insted of the url
+     */
     function setBankUrlAndName(url, name) {
         if(name==''){
             name = url;
@@ -67,12 +76,21 @@ $(document).ready(function () {
         }
     }
 
+    /**
+     * Displays info string besides the colored status text.
+     * @param info
+     */
     function setBankInfo(info) {
         $('#BankSearInfo').text(info);
         $('#ConnectBankInfo').text(info);
         $('#ConnectedBankInfo').text(info);
     }
 
+    /**
+     * Display a colored status text. Typical used to display link status.
+     * @param status_text : String : Text to be displayed
+     * @param status_colour : String : Colour code as defined by Bootstrap.
+     */
     function setBankStatus(status_text, status_colour) {
         $('#BankSearchStatus').text(status_text);
         $('#BankSearchStatus').attr("class", status_colour);
@@ -96,6 +114,11 @@ $(document).ready(function () {
         setBankStatus(status_text, "alert-danger")
     }
 
+    /**
+     * Test the bank is still online and updates the colored Bank Status accordingly
+     * @param bank_url : String : url link
+     * @param link_up_message : String : Text to be displayd on the colored status field if link ok.
+     */
     function updateBankLink(bank_url, link_up_message) {
         setBankStatusYello("PROBING");
 
@@ -135,7 +158,13 @@ $(document).ready(function () {
         })
     }
 
-
+    /**
+     * Loads the list of transaction.
+     * @param bankingapp_url : String : Url to bank's Bank Interface
+     * @param username
+     * @param password
+     * @param account
+     */
     function loadTransactionList(bankingapp_url, username, password, account){
         console.log('Load transaction data from bank.');
 
@@ -176,6 +205,10 @@ $(document).ready(function () {
         }, 'json');
     }
 
+    /**
+     * Loads various information from bank.
+     * Used only when user is signed-in.
+     */
     function loadDataFromBank() {
         console.log('Load data from bank.');
 
@@ -360,8 +393,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Search button in the Log-on dialog
-     * Switch to the Search Bank dialog and search through all tabs on the current browser window for potential banks.
+     * This function is called after the windows is completely loaded.
      */
     $('#mainbody').ready( function(){
         console.log('Load data from settings.');
@@ -421,6 +453,12 @@ $(document).ready(function () {
         });
     });
 
+    /* The following functions is for the Search panel */
+
+    /**
+     * Keydown function for the Address text input in the Search panel.
+     * If any text in Address input, the Detect button shall be enabled.
+     */
     $('#bankSearchAddr').keydown(function () {
         $('#bankSearchOk').attr("disabled", true);
 
@@ -435,7 +473,7 @@ $(document).ready(function () {
 
     /**
      * Detect button in the Search for Bank dialog.
-     * Try load a list of trusted banks from the selected url and displays these in the list.
+     * Try load a list of trusted banks from the selected url in address input and displays these in the list.
      */
     $('#BankSearchDetect').click(function () {
         var search_url = $('#bankSearchAddr').val();
@@ -443,6 +481,7 @@ $(document).ready(function () {
         setBankInfo('');
 
         if(search_url == "") {
+            // If url don't start with http prototype, aassume it is http
             autoDetectBanks();
         }else{
             if(!search_url.match(/^http/g)) {
@@ -453,6 +492,7 @@ $(document).ready(function () {
             setBankStatusYello("DETECTING");
             $('#bankSearchOk').attr("disabled", true);
 
+            // Load the url entered in the Address field.
             $.get(search_url, function(response, status) {
                 if (status == 'success') {
 
@@ -462,24 +502,26 @@ $(document).ready(function () {
                     var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
 
                     if(payment_interface_url) {
+                        // If site has Payment Interface, try ping it.
                         api_url = payment_interface_url + '?action=ping';
                         $.getJSON(api_url, function (response, status) {
                             if (status == 'success') {
-
                                 if (response.result == 'OK') {
+                                    // Ping returned ok.
                                     bank_name = response.name;
                                     setBankUrlAndName(search_url, bank_name);
 
+                                    // Then try the Bank Interface
                                     api_url = payment_interface_url + '?action=get_trusted_banks';
                                     $.getJSON(api_url, function (response, status) {
                                         if (status == 'success') {
-
                                             if (response.result == 'OK') {
+                                                // Bank interface seems ok, the bank is online.
                                                 setBankStatusGreen("ONLINE");
 
                                                 len = response.trusted_banks.length;
                                                 if(len > 0) {
-
+                                                    // Read the trusted banks and put them in the "List of auto-detected bansk"
                                                     for (index = 0; index < len; ++index) {
                                                         bank_url = response.trusted_banks[index];
 
@@ -544,6 +586,10 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * Detect button in Search panel.
+     * This take the Address and try load the page and load the list of trusted banks if the Payment Interface is found.
+     */
     $('#selectAutoDetectedBank').click(function () {
         var selected_bank_url = $('#selectAutoDetectedBank').val();
 
@@ -596,6 +642,12 @@ $(document).ready(function () {
         });
     });
 
+    /**
+     * OK button in Search panel.
+     * Takes the url in Address input as the bank to connect.
+     * OK button is only enabled after the bank url has been tested and the Banking App Interface has been found.
+     */
+
     $('#bankSearchOk').click(function () {
         var selected_bank = $('#bankSearchAddr').val();
 
@@ -620,6 +672,12 @@ $(document).ready(function () {
         });
     });
 
+    /* The following functions are for the Sign-In Panel */
+
+    /**
+     * Search button in the Sign-In Panel
+     * Switch to the Search Bank dialog and search through all tabs on the current browser window for potential banks.
+     */
     $('#searchBankPanel').click(function () {
         selectPanel(PANEL_SEARCH);
 
@@ -633,6 +691,10 @@ $(document).ready(function () {
         autoDetectBanks();
     });
 
+    /**
+     *  Connect button in the Sign-In Panel.
+     *  Connects to the bank. Store username and password.
+     */
     $('#ConnectBank').click(function () {
         $('#ConnectBank').attr("disabled", true);
         setBankStatusYello("CONNECTING");
@@ -707,6 +769,10 @@ $(document).ready(function () {
         })
     });
 
+    /**
+     * Function handling change of selected item in the account list.
+     * Store new default account to use.
+     */
     $('#defaultAccount').click(function () {
         var def_account = $('#defaultAccount').val();
 
@@ -716,6 +782,9 @@ $(document).ready(function () {
         });
     });
 
+    /**
+     * Send Cheque button in Send panel.
+     */
     $('#sendCheque').click(function() {
         var receivers_name = $('#send_cheque_receivers_name').val();
         var receivers_email = $('#send_cheque_receivers_email').val();
@@ -780,6 +849,9 @@ $(document).ready(function () {
 
     });
 
+    /**
+     * Handler for Remove Login Details button.
+     */
     $('#RemoveLoginDetails').click(function () {
         settings.getLoginDetails().then(function(login_details) {
             login_details['BankUrl'] = '';
