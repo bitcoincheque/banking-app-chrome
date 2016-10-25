@@ -511,7 +511,7 @@ $(document).ready(function () {
 
         setBankInfo('');
 
-        if(search_url == "") {
+        if(search_url != "") {
             // If url don't start with http prototype, aassume it is http
             if(!search_url.match(/^http/g)) {
                 search_url = 'http://' + search_url;
