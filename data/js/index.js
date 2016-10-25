@@ -411,8 +411,6 @@ $(document).ready(function () {
             var rememberPasswd = login_details['RememberPasswd'];
             var stayConnected = login_details['StayConnected'];
 
-        $('#BankSearchDetect').attr("disabled", true);
-        $('#bankSearchOk').attr("disabled", true);
             console.log('BankUrl=' + bank_url);
             console.log('Username=' + username);
             console.log('RememberPasswd=' + rememberPasswd);
@@ -485,8 +483,6 @@ $(document).ready(function () {
 
         if(search_url == "") {
             // If url don't start with http prototype, aassume it is http
-            autoDetectBanks();
-        }else{
             if(!search_url.match(/^http/g)) {
                 search_url = 'http://' + search_url;
             }
