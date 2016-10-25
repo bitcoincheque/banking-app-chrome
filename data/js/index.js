@@ -849,6 +849,14 @@ $(document).ready(function () {
 
     });
 
+    /*
+    $('#savePaymentBroswerHeader').click(function () {
+        var headerValue = $('#paymentBroswerHeader').val();
+        chrome.storage.sync.set({'PaymentBroswerHeader': headerValue});
+        chrome.runtime.sendMessage({paymentheader: headerValue});
+    });
+    */
+
     /**
      * Handler for Remove Login Details button.
      */
