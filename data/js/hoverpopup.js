@@ -10,7 +10,13 @@
 
 $(document).ready(function () {
 
-    var payment_link = window.name;
+    // TODO: This is a hack, sends the information in the name field of the window. Find a better technique.
+    var data = JSON.parse(window.name);
+
+    var payment_link = data['PaymentLink'];
+    var bank_name = data['BankName'];
+
+    $('#headline').text(bank_name);
 
     $.getJSON(payment_link, function(response) {
         $('#progress').fadeOut('fast', function () {

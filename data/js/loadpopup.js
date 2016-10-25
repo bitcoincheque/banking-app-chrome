@@ -33,11 +33,19 @@ $(document).ready(function () {
                 popupIframe.style.left = Number(rect.left) + Number(window.pageXOffset) + Number(rect.right - rect.left)/2 - 105 + 'px';
                 popupIframe.style.top = Number(rect.top) + Number(window.pageYOffset) - height + 'px';
 
-                // This is a hack. Need to give the payment link to the popup iframe. Using the name field.
-                // TODO: Should fine a better way to communicate with iframe
-                popupIframe.name = payment_link;
+                settings.getLoginDetails().then(function(login_details) {
 
-                document.body.appendChild(popupIframe);
+                    var data = {};
+                    data['BankName'] = login_details['BankName'];
+                    data['PaymentLink'] = payment_link;
+
+                    // This is a hack. Need to give the payment link to the popup iframe. Using the name field.
+                    // TODO: Should fine a better way to communicate with iframe
+                    var json_str = JSON.stringify(data);
+                    popupIframe.name = json_str;
+
+                    document.body.appendChild(popupIframe);
+                })
             }
         }
     }, function () {
