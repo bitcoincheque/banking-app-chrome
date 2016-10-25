@@ -802,8 +802,7 @@ $(document).ready(function () {
             cc_me = 1;
         }
 
-        $('#status_connection').text("Sending cheque...");
-        $('#status_connection').attr("class", "alert-warning");
+        setBankStatusYello("SENDING");
 
         settings.getLoginDetails().then(function(login_details) {
 
@@ -830,17 +829,16 @@ $(document).ready(function () {
             $.post(bankingapp_url, data, function(response, status) {
                 if(status=='success') {
                     if (response.result == 'OK') {
-                        $('#status_connection').text("Cheque sent OK");
-                        $('#status_connection').attr("class", "alert-success");
+                        setBankStatusGreen("OK");
                     }
                     else {
-                        $('#status_connection').text(response.message);
-                        $('#status_connection').attr("class", "alert-danger");
+                        setBankStatusRed("ERROR");
+                        setBankInfo(response.message);
                     }
                 }
                 else{
-                    $('#status_connection').text('Error: No response from bank.');
-                    $('#status_connection').attr("class", "alert-danger");
+                    setBankStatusRed("ERROR");
+                    setBankInfo("No response from bank.");
                 }
             }, 'json');
 
