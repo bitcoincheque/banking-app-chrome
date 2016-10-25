@@ -20,7 +20,7 @@ $(document).ready(function () {
 
     /**
      * Change panel
-     * @param panel : String : One of the PANEL_ consts.
+     * @param panel : Number : One of the PANEL_ consts.
      */
     function selectPanel(panel){
         switch(panel) {
@@ -44,6 +44,31 @@ $(document).ready(function () {
                 $('a[href="#tabAccount"]').tab('show');
                 break;
             }
+            case PANEL_SEND:{
+                $('#bankSearch').hide();
+                $('#disconnected').hide();
+                $('#connected').show();
+
+                $('a[href="#tabAccount"]').tab('show');
+                break;
+            }
+            case PANEL_GET:{
+                $('#bankSearch').hide();
+                $('#disconnected').hide();
+                $('#connected').show();
+
+                $('a[href="#tabAccount"]').tab('show');
+                break;
+            }
+            case PANEL_OPTION:{
+                $('#bankSearch').hide();
+                $('#disconnected').hide();
+                $('#connected').show();
+
+                $('a[href="#tabAccount"]').tab('show');
+                break;
+            }
+
         }
 
         setBankInfo('');
@@ -117,6 +142,11 @@ $(document).ready(function () {
         setBankStatus(status_text, "alert-danger")
     }
 
+    function setBankStatusOff() {
+        setBankStatus("", "");
+    }
+
+
     /**
      * Test the bank is still online and updates the colored Bank Status accordingly
      * @param bank_url : String : url link
@@ -130,13 +160,13 @@ $(document).ready(function () {
         $.get(bank_url, function(response, status) {
             if (status == 'success') {
 
-                payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
-                bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
+                var payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
 
                 if(bankingapp_url)
                 {
                     if(payment_interface_url) {
-                        api_url = payment_interface_url + '?action=ping';
+                        var api_url = payment_interface_url + '?action=ping';
                         $.getJSON(api_url, function (response, status) {
                             if (status == 'success') {
                                 if (response.result == 'OK') {
@@ -183,17 +213,17 @@ $(document).ready(function () {
             if (response.result == "OK") {
                 $('#latestTransaction option[value="status"]').remove();
 
-                for (index = 0, len = response.transactions.length; index < len; ++index) {
+                for (var index = 0, len = response.transactions.length; index < len; ++index) {
 
-                    datetime = response.transactions[index].datetime.substring(5);
-                    trans_type = response.transactions[index].type.toLowerCase();
+                    var datetime = response.transactions[index].datetime.substring(5);
+                    var trans_type = response.transactions[index].type.toLowerCase();
                     trans_type = trans_type.charAt(0).toUpperCase() + trans_type.slice(1);
-                    amount = response.transactions[index].amount;
-                    amount_int = Number(amount);
-                    amount_float = (1.0 * amount_int) / SATHOSI;
-                    amount_str = String(amount_float);
+                    var amount = response.transactions[index].amount;
+                    var amount_int = Number(amount);
+                    var amount_float = (1.0 * amount_int) / SATHOSI;
+                    var amount_str = String(amount_float);
 
-                    option_text = '<option value="'+ String(response.transactions[index].id) +'">' + datetime + ' ' + trans_type + ' ' + amount_str + '</option>';
+                    var option_text = '<option value="'+ String(response.transactions[index].id) +'">' + datetime + ' ' + trans_type + ' ' + amount_str + '</option>';
                     $('#latestTransaction').append(option_text);
                 }
 
@@ -236,19 +266,19 @@ $(document).ready(function () {
             $.post(bankingapp_url, data, function(response) {
                 if(response.result == "OK")
                 {
-                    for (index = 0, len = response.list.length; index < len; ++index) {
-                        balance_int = Number(response.list[index].balance);
-                        balance_float = balance_int / SATHOSI;
-                        balance_str = String(balance_float);
+                    for (var index = 0, len = response.list.length; index < len; ++index) {
+                        var balance_int = Number(response.list[index].balance);
+                        var balance_float = balance_int / SATHOSI;
+                        var balance_str = String(balance_float);
 
-                        option_text = '<option value="'+ String(response.list[index].account_id) +'">' + response.list[index].name + ' / ' + balance_str +' ' + response.list[index].currency + '</option>';
+                        var option_text = '<option value="'+ String(response.list[index].account_id) +'">' + response.list[index].name + ' / ' + balance_str +' ' + response.list[index].currency + '</option>';
                         $('#defaultAccount').append(option_text);
                     }
 
                     // If only one account, set is as the default
                     if(response.list.length == 1){
-                        account = response.list[0].account_id;
-                        account_currency = response.list[0].currency
+                        var account = response.list[0].account_id;
+                        var account_currency = response.list[0].currency;
 
                         settings.getLoginDetails().then(function(login_details) {
                             login_details['Account'] = account;
@@ -293,11 +323,11 @@ $(document).ready(function () {
                 $.get(url, function(response, status) {
                     if (status == 'success') {
 
-                        payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                        var payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
                         var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
 
                         if(payment_interface_url) {
-                            api_url = payment_interface_url + '?action=ping';
+                            var api_url = payment_interface_url + '?action=ping';
                             $.getJSON(api_url, function (response, status) {
                                 if (status == 'success') {
                                     if (response.result == 'OK') {
@@ -305,7 +335,7 @@ $(document).ready(function () {
                                         setBankStatusGreen("LOADING");
 
                                         if (bankingapp_url) {
-                                            option_text = '<option value="' + url + '">' + url + '</option>';
+                                            var option_text = '<option value="' + url + '">' + url + '</option>';
                                             $('#selectAutoDetectedBank').append(option_text);
                                         }
 
@@ -313,12 +343,12 @@ $(document).ready(function () {
                                         $.getJSON(api_url, function (response, status) {
                                             if (status == 'success') {
                                                 if (response.result == 'OK') {
-                                                    len = response.trusted_banks.length;
+                                                    var len = response.trusted_banks.length;
                                                     if(len > 0) {
-                                                        for (index = 0; index < len; ++index) {
-                                                            bank_url = response.trusted_banks[index];
+                                                        for (var index = 0; index < len; ++index) {
+                                                            var bank_url = response.trusted_banks[index];
 
-                                                            option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
+                                                            var option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
                                                             $('#selectAutoDetectedBank').append(option_text);
                                                         }
                                                     }
@@ -345,7 +375,7 @@ $(document).ready(function () {
             }
         }else{
             setBankUrlAndName('', '');
-            setBankStatus('');
+            setBankStatusOff();
         }
     }
 
@@ -357,10 +387,10 @@ $(document).ready(function () {
             var match_list = [];
             for(i=0; i<arrayOfTabs.length; i++) {
 
-                tab = arrayOfTabs[i];
-                tab_url = tab.url;
+                var tab = arrayOfTabs[i];
+                var tab_url = tab.url;
                 if(tab_url) {
-                    match = tab_url.match(/^((http|https)\:\/\/[^\/?#]+)(?:[\/?#]|$)/i);
+                    var match = tab_url.match(/^((http|https)\:\/\/[^\/?#]+)(?:[\/?#]|$)/i);
 
                     if (match && match.length > 1 && typeof match[1] === 'string' && match[1].length > 0) {
                         if(match_list.indexOf(match[1]) < 0) {
@@ -369,7 +399,7 @@ $(document).ready(function () {
                     }
 
                     /* Special case for situation when running localhost and site is located in a sub folder */
-                    match2 = tab_url.match(/^((http|https)\:\/\/localhost\/)[^\/?#]+/i);
+                    var match2 = tab_url.match(/^((http|https)\:\/\/localhost\/)[^\/?#]+/i);
                     if (match2 && match2.length > 1 && typeof match2[0] === 'string' && match2[0].length > 0) {
                         if(match_list.indexOf(match2[0]) < 0) {
                             match_list.push(match2[0]);
@@ -420,7 +450,7 @@ $(document).ready(function () {
             $('#password').val(password);
 
 
-            option_text = '<option value="' + bank_url + '" selected>' + bank_url + '</option>';
+            var option_text = '<option value="' + bank_url + '" selected>' + bank_url + '</option>';
             $('#bankAddress').append(option_text);
 
             if(rememberPasswd == 1) {
@@ -463,7 +493,7 @@ $(document).ready(function () {
     $('#bankSearchAddr').keydown(function () {
         $('#bankSearchOk').attr("disabled", true);
 
-        search_url = $('#bankSearchAddr').val();
+        var search_url = $('#bankSearchAddr').val();
 
         if(search_url == "") {
             $('#BankSearchDetect').attr("disabled", true);
@@ -497,17 +527,17 @@ $(document).ready(function () {
 
                     setBankStatusGreen("LOADING");
 
-                    payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
+                    var payment_interface_url = $(response).filter('link[rel=MoneyAddress]').attr("href");
                     var bankingapp_url = $(response).filter('link[rel=BankingApp]').attr("href");
 
                     if(payment_interface_url) {
                         // If site has Payment Interface, try ping it.
-                        api_url = payment_interface_url + '?action=ping';
+                        var api_url = payment_interface_url + '?action=ping';
                         $.getJSON(api_url, function (response, status) {
                             if (status == 'success') {
                                 if (response.result == 'OK') {
                                     // Ping returned ok.
-                                    bank_name = response.name;
+                                    var bank_name = response.name;
                                     setBankUrlAndName(search_url, bank_name);
 
                                     // Then try the Bank Interface
@@ -518,13 +548,13 @@ $(document).ready(function () {
                                                 // Bank interface seems ok, the bank is online.
                                                 setBankStatusGreen("ONLINE");
 
-                                                len = response.trusted_banks.length;
+                                                var len = response.trusted_banks.length;
                                                 if(len > 0) {
                                                     // Read the trusted banks and put them in the "List of auto-detected bansk"
-                                                    for (index = 0; index < len; ++index) {
-                                                        bank_url = response.trusted_banks[index];
+                                                    for (var index = 0; index < len; ++index) {
+                                                        var bank_url = response.trusted_banks[index];
 
-                                                        option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
+                                                        var option_text = '<option value="' + bank_url + '">' + bank_url + '</option>';
                                                         $('#selectAutoDetectedBank').append(option_text);
                                                     }
 
@@ -533,7 +563,7 @@ $(document).ready(function () {
                                                         if(len == 0) {
                                                             setBankInfo("This bank trusts no other banks.");
                                                         } else if(len == 1){
-                                                            info = "This bank trusts 1 other bank.";
+                                                            var info = "This bank trusts 1 other bank.";
                                                             setBankInfo(info);
                                                         } else {
                                                             info = "This bank trusts " + len + " other banks.";
@@ -650,7 +680,7 @@ $(document).ready(function () {
     $('#bankSearchOk').click(function () {
         var selected_bank = $('#bankSearchAddr').val();
 
-        option_text = '<option value="'+ selected_bank +'">' + selected_bank + '</option>';
+        var option_text = '<option value="'+ selected_bank +'">' + selected_bank + '</option>';
         $('#bankAddress').append(option_text);
         $('#bankAddress').val(selected_bank);
 
@@ -787,11 +817,11 @@ $(document).ready(function () {
     $('#sendCheque').click(function() {
         var receivers_name = $('#send_cheque_receivers_name').val();
         var receivers_email = $('#send_cheque_receivers_email').val();
-        amount_str = $('#send_cheque_amount').val();
+        var amount_str = $('#send_cheque_amount').val();
         var memo = $('#send_cheque_memo').val();
 
         var amount = 0;
-        amount_float = parseFloat(amount_str);
+        var amount_float = parseFloat(amount_str);
         if(amount_float > 0.0)
         {
             amount = Math.floor(amount_float * SATHOSI);
@@ -813,7 +843,7 @@ $(document).ready(function () {
             var account = login_details['Account'];
             var account_currency = login_details['AccountCurrency'];
 
-            data = {};
+            var data = {};
             data['action'] = 'draw_cheque';
             data['username'] = username;
             data['password'] = password;
