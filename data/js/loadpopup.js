@@ -17,7 +17,7 @@ $(document).ready(function () {
         if (/^bitcoin:/.test(href)) {
             var requests = href.match(/\?request=[\w\:.&=\-?\/]+/);
             if (requests) {
-                payment_link = requests[0].substring(9);
+                var payment_link = requests[0].substring(9);
 
                 var rect = this.getBoundingClientRect();
 

@@ -10,27 +10,27 @@
 
 $(document).ready(function () {
 
-    payment_link = window.name;
+    var payment_link = window.name;
 
     $.getJSON(payment_link, function(response) {
         $('#progress').fadeOut('fast', function () {
-            cheque_request_encoded = response.payment_request;
-            i = cheque_request_encoded.lastIndexOf('_');
-            json_padded_base64 = cheque_request_encoded.substring(i + 1);
-            json_padded = window.atob(json_padded_base64);
-            json = json_padded.trim();
+            var cheque_request_encoded = response.payment_request;
+            var i = cheque_request_encoded.lastIndexOf('_');
+            var json_padded_base64 = cheque_request_encoded.substring(i + 1);
+            var json_padded = window.atob(json_padded_base64);
+            var json = json_padded.trim();
 
-            cheque_request = JSON.parse(json);
-            data_json = cheque_request['data'];
-            md5sum = CryptoJS.MD5(data_json);
-            md5sum_str = md5sum.toString();
+            var cheque_request = JSON.parse(json);
+            var data_json = cheque_request['data'];
+            var md5sum = CryptoJS.MD5(data_json);
+            var md5sum_str = md5sum.toString();
 
             if (md5sum_str == cheque_request.md5) {
-                data = JSON.parse(data_json);
+                var data = JSON.parse(data_json);
 
-                amount_int = Number(data.amount);
-                amount_float = amount_int / 100000000;
-                amount_str = String(amount_float);
+                var amount_int = Number(data.amount);
+                var amount_float = amount_int / 100000000;
+                var amount_str = String(amount_float);
 
                 $('#price').fadeIn('fast').html('Price: <span class="pull-right">' + Number(amount_str) + ' ' + data.currency + '</span>');
                 $('#status').fadeIn('fast').html('Receiver: <span class="pull-right">' + data.receiver_name + '</span>');
@@ -44,6 +44,5 @@ $(document).ready(function () {
     $('#closeButton').click(function () {
         window.parent.close();
     });
-
 
 });

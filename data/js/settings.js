@@ -20,7 +20,7 @@
             object[LOGIN_DETAILS] = {};
 
             chrome.storage.local.get(object, function (result) {
-                value = result[key]
+                var value = result[key];
                 resolve(value);
             });
         });

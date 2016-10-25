@@ -26,7 +26,7 @@
         var headers = details.requestHeaders;
         var blockingResponse = {};
 
-        targetHeaders = headers;
+        var targetHeaders = headers;
         if(headerEnabled){
             targetHeaders.push({name: paymentHeaders.Name, value: paymentHeaders.Value});
         }

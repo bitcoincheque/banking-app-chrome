@@ -16,7 +16,7 @@ $(document).ready(function () {
         if (/^bitcoin:/.test(href)) {
             var requests = href.match(/\?request=[\w\:.&=\-?\/]+/);
             if (requests) {
-                payment_link = requests[0].substring(9);
+                var payment_link = requests[0].substring(9);
                 makePayment(payment_link);
                 return false;
             }
@@ -31,14 +31,14 @@ $(document).ready(function () {
         $.getJSON(payment_link, function(json_payment_info) {
             // Decode it
             var payment_request_file = json_payment_info.payment_request;
-            i = payment_request_file.lastIndexOf('_');
-            json_padded_base64 = payment_request_file.substring(i+1);
-            json_padded = window.atob(json_padded_base64);
-            json = json_padded.trim();
-            cheque_request = JSON.parse(json);
-            data_json = cheque_request['data'];
-            md5sum = CryptoJS.MD5(data_json);
-            md5sum_str = md5sum.toString();
+            var i = payment_request_file.lastIndexOf('_');
+            var json_padded_base64 = payment_request_file.substring(i+1);
+            var json_padded = window.atob(json_padded_base64);
+            var json = json_padded.trim();
+            var cheque_request = JSON.parse(json);
+            var data_json = cheque_request['data'];
+            var md5sum = CryptoJS.MD5(data_json);
+            var md5sum_str = md5sum.toString();
 
             if(md5sum_str == cheque_request.md5) {
                 var payment_request = JSON.parse(data_json);
@@ -50,7 +50,7 @@ $(document).ready(function () {
                     var password = login_details['Password'];
                     var account = login_details['Account'];
 
-                    data = {};
+                    var data = {};
                     data['action'] = 'request_cheque';
                     data['username'] = username;
                     data['password'] = password;
@@ -60,7 +60,7 @@ $(document).ready(function () {
                     $.post(bankingapp_url, data, function(response){
                         if(response.result == 'OK')
                         {
-                            url = payment_request.paylink;
+                            var url = payment_request.paylink;
 
                             data = {};
                             data['action'] = 'send_payment_cheque';
